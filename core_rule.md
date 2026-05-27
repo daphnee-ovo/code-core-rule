@@ -201,3 +201,31 @@ Good:
 Bad:
 把 user_id 改成 id，默认值从 null 改成空字符串，但不更新调用方和测试。
 ```
+
+## Rust 明确约束优先
+
+Rust 代码默认不得使用 `unsafe`、`std::any::Any` 等绕开类型系统或削弱工程约束的能力。只有在性能、FFI、底层系统调用、类型擦除边界等确有必要，且没有更清晰的类型建模方案时，才允许使用；使用时必须把范围压到最小，并说明原因、风险和安全边界。
+
+Few-shot:
+
+```text
+Task: 根据不同任务类型执行不同逻辑。
+
+Good:
+使用 enum + trait 明确建模任务类型和行为。
+
+Bad:
+把所有任务塞进 Box<dyn Any>，运行时 downcast，再靠约定判断真实类型。
+```
+
+```rust
+// Good
+enum Task {
+    Fetch(FetchTask),
+    Parse(ParseTask),
+    Export(ExportTask),
+}
+
+// Bad
+let task: Box<dyn Any> = Box::new(fetch_task);
+```
