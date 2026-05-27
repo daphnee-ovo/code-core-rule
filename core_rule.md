@@ -86,3 +86,54 @@ Good:
 Bad:
 新增 --debug-mode-plus，同时默认开启详细日志，顺便重构整个输出格式。
 ```
+
+## 透明报错
+
+程序必须清晰报告错误，禁止静默失败。失败时应说明发生了什么、可能原因、影响范围和下一步处理方式；不要吞掉异常、返回模糊结果，或让用户误以为任务已经成功。
+
+Few-shot:
+
+```text
+Task: 读取配置文件。
+
+Good:
+Error: config.yaml not found. Expected path: ./config/config.yaml. Please create the file or pass --config <path>.
+
+Bad:
+程序继续运行，使用空配置，最后输出一个不完整结果。
+```
+
+## 组合优于集成
+
+不要一次性制造大而全的程序。优先把能力拆成职责清晰、接口统一、可独立替换的组件，再通过稳定协议串联起来。模块之间应依赖清晰输入输出，而不是互相嵌死在内部实现里，保证后续能拆卸、替换、测试和维护。
+
+Few-shot:
+
+```text
+Task: 做一个数据处理流程。
+
+Good:
+reader -> cleaner -> transformer -> writer
+每一步用统一输入输出衔接，可以单独替换 CSV reader、DB reader 或 Excel writer。
+
+Bad:
+写一个 mega_pipeline()，里面同时负责读文件、清洗、转换、写入、日志、异常处理和配置解析，任何一步变化都要改整个函数。
+```
+
+## 快速失败
+
+如果程序完整运行依赖特定配置、组件、服务、权限或外部资源，就必须在启动阶段或任务开始前完成检查，并在依赖缺失时立即失败并说明原因。禁止等到用户调用某个功能时才暴露依赖问题，避免服务表面可用、实际功能残缺。
+
+Few-shot:
+
+```text
+Task: 启动一个包含导出功能的服务，导出功能依赖 LibreOffice。
+
+Good:
+服务启动时检查 LibreOffice 是否存在；如果缺失，直接报错：
+Error: LibreOffice is required for export feature but was not found.
+
+Bad:
+服务正常启动，直到用户点击“导出 PDF”时才报错：
+Command not found: libreoffice
+```
