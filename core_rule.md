@@ -219,6 +219,26 @@ Bad:
 All results are placed into one output string. Later, distinguishing success / error / metadata / permission_info requires string parsing or breaking the old format.
 ```
 
+### Centralized Configuration
+
+Mutable parameters, paths, names, thresholds, feature flags, model names, and environment-specific values should be centralized instead of scattered through business logic. Simple scripts may keep configuration at the top of the file; medium or large projects should use a dedicated configuration file such as `config.toml`, `config.yaml`, or environment-based configuration. Configuration should be clearly named and serve as a single source of truth. Do not force ordinary local variables into configuration when they are not expected to change.
+
+Few-shot:
+
+```text
+Task: Multiple flows need the default validation set name.
+
+Good:
+Define it once at the top of the file or in a config file:
+val_name = "validation"
+
+Business logic only references val_name.
+
+Bad:
+Hard-code "validation" repeatedly in training, evaluation, export, and logging logic.
+When it needs to change to "val", the agent must search and replace globally and may miss some places.
+```
+
 ### Prefer Explicit Constraints
 
 Code should prefer explicit modeling capabilities provided by the language and type system. Avoid implementation approaches that bypass constraints, hide real types, or rely on runtime conventions. Weakly constrained mechanisms are allowed only when performance, FFI, plugin boundaries, dynamic extension, or similar needs make them necessary and no clearer modeling approach exists. When used, their scope must be minimized and their rationale, risks, and boundaries must be documented.
